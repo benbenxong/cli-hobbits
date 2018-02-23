@@ -1,6 +1,48 @@
 (ns clj-hobbits.core
   (:gen-class))
 
+;; fwpd test ;;;;;;;;;;;;;;;;;;;;;
+(def filename "suspects.csv")
+
+(def vamp-keys [:name :glitter-index])
+
+(defn str->int
+  [str]
+  (Integer. str))
+
+(def conversions {:name identity 
+                  :glitter-index str->int})
+
+(defn convert
+  [vamp-key value]
+  ((get conversions vamp-key) value))
+
+(defn parse
+  "Convert a CSV into rows of columns"
+  [string]
+  (map #(clojure.string/split % #",")
+       (clojure.string/split string #"\r\n")))
+
+(defn mapify-test
+  "Return a seq of maps like {:name \"Edward Cullen\" :glitter-index 10"
+  [rows]
+  (map #(into {}
+              {:name (first %)
+               :glitter-index (convert :glitter-index (second %))})
+       rows))
+
+(defn mapify
+  "Return a seq of maps like {:name \"Edward Cullen\" :glitter-index 10"
+  [rows]
+  (map (fn [unmapped]
+         (into {} (map (fn [key val] (vector key (convert key val))) vamp-keys unmapped)))
+       rows))
+
+(defn glitter-filter
+  [min-glitter records]
+  (filter #(>= (:glitter-index %) min-glitter) records))
+;; end fwpd test ;;;;;;;;;;;;;;;;;
+
 (def asym-hobbit-body-parts [{:name "head" :size 3}
                              {:name "left-eye" :size 1}
                              {:name "left-ear" :size 1}
